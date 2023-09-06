@@ -14,13 +14,11 @@ leak_name=['cve','cwe']
 
 filepath = 'C:\\Users\\Administrator\\Desktop\\gujianhuizong\\jizhunceshi'
 
-#新建表的title
-title=['测试固件','CPU架构','文件数量','敏感信息','CWE缺陷','CVE漏洞','文件成分','许可证书','安全编译选项']
 
 #缺陷表的文件路径
 excel_path = 'C:/Users/anban/Desktop/PingCode.Project-易识开源软件供应链安全评估系统-缺陷-export20230212030907.xls'
 
-
+#新建表的title
 datas = [['测试固件','CPU架构','文件数量','CWE缺陷','CVE漏洞','敏感信息','文件成分','安全编译选项']]
 
 l = []

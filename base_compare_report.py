@@ -41,18 +41,34 @@ class Base_Compare_Data:
                     All_software_components = len(json.loads(firmware[0][0])['software_components']['summary'])
 
                     #提取敏感信息数据（ip插件+user插件的数量总和）
-                    a = json.loads(firmware[0][0])['ip_and_uri_finder']['summary']
-                    b = json.loads(firmware[0][0])['users_and_passwords']['summary']
-                    if bool(a) is True and bool(b) is True:
-                        All_ip_count = len(list(a.values())[0]['plugin_res'])
-                        All_users_count = len(list(b.values())[0]['plugin_res'])
-                        All_sensetive = All_ip_count+All_users_count
-                    elif bool(a) is True and bool(b) is False:
-                        All_sensetive = len(list(a.values())[0]['plugin_res'])
-                    elif bool(a) is False and bool(b) is True:
-                        All_sensetive =len(list(b.values())[0]['plugin_res'])
+                    # 获取ip插件中的敏感信息数据
+                    ip_uri = json.loads(firmware[0][0])['ip_and_uri_finder']['summary']
+                    ip_uri_len = len(list(ip_uri.values()))
+                    ip_uri_datas = []
+                    if len(ip_uri) > 0:
+                        for i in range(0, ip_uri_len):
+                            ip_uri_s = list(ip_uri.values())[i]["plugin_res"]
+                            ip_uri_data = len(ip_uri_s)
+                            ip_uri_datas.append(ip_uri_data)
                     else:
-                        All_sensetive = 0
+                        ip_uri_datas = [0]
+                    All_ip_uri = sum(ip_uri_datas)
+                    #获取user插件中的敏感信息数据
+                    user_passwd = json.loads(firmware[0][0])['users_and_passwords']['summary']
+                    user_passwd_len = len(list(user_passwd.values()))
+                    user_passwd_datas = []
+                    if len(user_passwd) > 0:
+                        for i in range(0, user_passwd_len):
+                            user_passwd_s = list(user_passwd.values())[i]["plugin_res"]
+                            user_passwd_data = len(user_passwd_s)
+                            user_passwd_datas.append(user_passwd_data)
+                    else:
+                        user_passwd_datas = [0]
+                    All_user_passwd = sum(user_passwd_datas)
+                    #敏感信息数据由ip和user插件的数据相加
+                    All_sensetive = All_ip_uri + All_user_passwd
+
+
 
                     # 提取文件解包数量
                     file_type_count = json.loads(base_datas[0][0])['total_files_count']
@@ -66,14 +82,17 @@ class Base_Compare_Data:
                         cwe = json.loads(All_cwe[0][0])['all']
                     else:
                         cwe = 0
+
                     #把所有数据放进一个列表中
-                    a = (firmname,cpu,file_type_count,cwe,cve,All_sensetive,All_software_components,All_elf_checksec)
-                    data = list(a)
+                    ll = (firmname,cpu,file_type_count,cwe,cve,All_sensetive,All_software_components,All_elf_checksec)
+                    data = list(ll)
                     datas.append(data)
+
                 else:
                     continue
             #把列表的数据加到excel表格中
             Excel_Create(datas)
+
 
 
         except Exception as e:

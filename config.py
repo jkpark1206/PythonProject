@@ -1,7 +1,7 @@
 
 
 #数据库信息
-database = ['ys_yishi','192.168.1.208',25432,'postgres',123456]
+database = ['ys_yishi','192.168.5.242',25432,'postgres',123456]
 
 #csv文件路径
 # filename='C:\\Users\\Administrator\\Desktop\gujianhuizong\\jizhunceshi.csv'

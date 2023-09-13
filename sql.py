@@ -24,6 +24,6 @@ class Handle_sql:
         return base_data_sql
 
 if __name__ == '__main__':
-    print(Handle_sql().get_cve_sql('test_1',plugin))
+    print(Handle_sql().get_cve_sql('Aceex-NR22-webflash.bin',plugin))
 
 

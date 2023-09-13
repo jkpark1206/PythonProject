@@ -1,12 +1,13 @@
 from openpyxl import Workbook
-import openpyxl
-import datetime
-from config import *
 import time
+
+import config
+from config import *
 
 # date = time.strftime("%Y%m%d-%H%M%S",time.localtime())
 # print(date)
 # 写入数据
+
 def Excel_Create(data):
     # 创建一个叫wk的excel表格
     wk = Workbook()
@@ -15,9 +16,9 @@ def Excel_Create(data):
     date = time.strftime("%Y%m%d-%H%M%S",time.localtime())
     for row in data:
         sheet.append(row)
-        wk.save('C:\\Users\\Administrator\\Desktop\\基准测试数据记录{}.xlsx'.format(date))
+        wk.save(config.excel_filepath+'{}.xlsx'.format(date))
 
-if __name__ == '__main__':
-    data =[['学号', '姓名', '成绩']]
-    Excel_Create(data)
+# if __name__ == '__main__':
+#     data =[['学号', '姓名', '成绩']]
+#     Excel_Create(data)
 

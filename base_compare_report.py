@@ -6,6 +6,7 @@ from config import *
 import json
 from File_path import traverse_folder
 from Save_Excel import *
+from excel_datas import Handle_openpyxl
 
 class Base_Compare_Data:
     def __init__(self):
@@ -14,8 +15,12 @@ class Base_Compare_Data:
 
     def get_file_type_datas(self):
         try:
-            for i in traverse_folder(filepath):
-                firmname = i.split('\\')[-1]
+            #读取文件夹下的所有文件
+            # for i in traverse_folder(filepath):
+            #     firmname = i.split('\\')[-1]
+
+            #读取CSV文件中的固件名
+            for firmname in Handle_openpyxl().Read_csv():
                 self.cur.execute(Handle_sql().get_plugin_sql(firmname, plugin))
                 firmware = self.cur.fetchall()
                 self.cur.execute(Handle_sql().get_base_data_sql(firmname, plugin))
@@ -39,6 +44,8 @@ class Base_Compare_Data:
 
                     #提取文件成分数量
                     All_software_components = len(json.loads(firmware[0][0])['software_components']['summary'])
+                    software_components = json.loads(firmware[0][0])['software_components']['summary']
+
 
                     #提取敏感信息数据（ip插件+user插件的数量总和）
                     # 获取ip插件中的敏感信息数据
@@ -92,7 +99,6 @@ class Base_Compare_Data:
                     continue
             #把列表的数据加到excel表格中
             Excel_Create(datas)
-
 
 
         except Exception as e:

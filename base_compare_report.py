@@ -4,6 +4,7 @@ from conn_database import OperationpostgresBase
 from sql import Handle_sql
 from config import *
 import json
+import datetime
 from File_path import traverse_folder
 from Save_Excel import *
 from excel_datas import Handle_openpyxl
@@ -15,25 +16,32 @@ class Base_Compare_Data:
 
     def get_file_type_datas(self):
         try:
-            #读取文件夹下的所有文件
-            # for i in traverse_folder(filepath):
-            #     firmname = i.split('\\')[-1]
+            #方法1：读取文件夹下的所有文件
+            for i in traverse_folder(filepath):
+                firmname = i.split('\\')[-1]
 
-            #读取CSV文件中的固件名
-            for firmname in Handle_openpyxl().Read_csv():
-                self.cur.execute(Handle_sql().get_plugin_sql(firmname, plugin))
+            #方法2：读取CSV文件中的固件名  此处传的必须是固件名，不能是固件路径，因为sql语句中是通过固件名查找的
+            # for firmname in csv_firm_name(csv_filepath):
+
+            #sql语句查询相应结果
+                self.cur.execute(Handle_sql().get_plugin_sql(firmname, plugin,create_time))
                 firmware = self.cur.fetchall()
-                self.cur.execute(Handle_sql().get_base_data_sql(firmname, plugin))
+                self.cur.execute(Handle_sql().get_base_data_sql(firmname, plugin,create_time))
                 base_datas = self.cur.fetchall()
-                self.cur.execute(Handle_sql().get_cve_sql(firmname, plugin))
+                self.cur.execute(Handle_sql().get_cve_sql(firmname, plugin,create_time))
                 All_cve = self.cur.fetchall()
-                self.cur.execute(Handle_sql().get_cwe_sql(firmname, plugin))
+                self.cur.execute(Handle_sql().get_cwe_sql(firmname, plugin,create_time))
                 All_cwe = self.cur.fetchall()
+                self.cur.execute(Handle_sql().get_create_time_sql(firmname, plugin, create_time))
+                start_date = self.cur.fetchall()
+                self.cur.execute(Handle_sql().get_end_time_sql(firmname, plugin, create_time))
+                end_date = self.cur.fetchall()
 
+                soft_list = list()
                 if bool(firmware) is True or bool(base_datas) is True:   #任务存在
                     #提取file_type
-                    # All_file_type = json.loads(firmware[0][0])['file_type']['summary']
-                    # file_type = str(All_file_type)[1:-1]
+                    All_file_type = json.loads(firmware[0][0])['file_type']['summary']
+                    file_type = str(All_file_type)[1:-1]
 
                     #提取CPU信息
                     All_cpu = json.loads(firmware[0][0])['cpu_architecture']['summary']
@@ -43,8 +51,7 @@ class Base_Compare_Data:
                     All_elf_checksec = json.loads(firmware[0][0])['elf_checksec']['count']
 
                     #提取文件成分数量
-                    All_software_components = len(json.loads(firmware[0][0])['software_components']['summary'])
-                    software_components = json.loads(firmware[0][0])['software_components']['summary']
+                    software_components_count = len(json.loads(firmware[0][0])['software_components']['summary'])
 
 
                     #提取敏感信息数据（ip插件+user插件的数量总和）
@@ -90,13 +97,32 @@ class Base_Compare_Data:
                     else:
                         cwe = 0
 
+                    #文件成分（组件及其版本）
+                    software_components = json.loads(firmware[0][0])['software_components']['summary']
+                    for software in software_components:
+                        software_components_name = software[0] + software[1]
+                        soft_list.append(software_components_name)
+                    all_software_components = str(soft_list)[1:-1]
+
+                    #计算任务运行的时间
+                    t1 = start_date[0][0]
+                    t2 = end_date[0][0]
+                    use_time = t2-t1
+
+
                     #把所有数据放进一个列表中
-                    ll = (firmname,cpu,file_type_count,cwe,cve,All_sensetive,All_software_components,All_elf_checksec)
+                    ll = (firmname,file_type_count,cpu,cwe,cve,software_components_count,all_software_components,All_sensetive,All_elf_checksec,use_time)
+                    data = list(ll)
+                    datas.append(data)
+                    #,cpu,All_elf_checksec,All_sensetive,file_type
+
+
+                else:
+                    ll = (firmname, '任务不存在', '/', '/', '/', '/', '/', '/', '/', '/')
                     data = list(ll)
                     datas.append(data)
 
-                else:
-                    continue
+
             #把列表的数据加到excel表格中
             Excel_Create(datas)
 
@@ -107,3 +133,6 @@ class Base_Compare_Data:
 
 if __name__ == '__main__':
     Base_Compare_Data().get_file_type_datas()
+
+
+

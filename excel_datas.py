@@ -5,7 +5,7 @@ class Handle_openpyxl:
     def __init__(self):
 
         try:
-            self.wb = open(filename)
+            self.wb = open(filename, encoding = 'utf-8')
         except:
             print('打开文件失败，请检查')
 
@@ -21,7 +21,6 @@ class Handle_openpyxl:
         try:
             for i in self.reader:
                 fw_names.append(i[0])
-
             return fw_names
         except Exception as e:
             print('提取cve数据失败,失败原因：{}'.format(e))
